@@ -1,3 +1,0 @@
-User-agent: *
-
-sitemap: https://dhwaneetbhatt.com/sitemap.xml
