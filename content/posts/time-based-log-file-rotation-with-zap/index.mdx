@@ -1,0 +1,66 @@
+---
+title: "Time based log file rotation with zap"
+date: 2020-05-15
+slug: "/time-based-log-file-rotation-with-zap"
+tags:
+  - Go
+  - Logging
+canonicalUrl: "https://dhwaneetbhatt.com/blog/time-based-log-file-rotation-with-zap"
+---
+
+[zap](https://github.com/uber-go/zap) is one of the nicely maintained, well-written and [nicely performing](https://github.com/uber-go/zap#performance) open source logging libraries in Go. Unfortunately, not all apps in our organization are 12-factor apps and thus we still log to physical files. So, I needed a way to rotate log files while using zap. I come from Java background, and [log4j](https://logging.apache.org/log4j/2.x/) has a very vast array of log rotation options. But I found it lacking in zap, clearly because in the world of containers, logging to stdout (treating logs as event streams - [12-factor logs](https://12factor.net/logs)) is very common. <!--more-->
+
+To be specific, I was looking to do time based rotation (one log file per hour, helps in debugging) and not size based. On [zap's FAQ](https://github.com/uber-go/zap/blob/master/FAQ.md#does-zap-support-log-rotation), they've shown integration with [lumberjack](https://godoc.org/gopkg.in/natefinch/lumberjack.v2), which only supports size based rotation.
+
+I found another library [file-rotatelogs](https://github.com/lestrrat-go/file-rotatelogs) which does support time based rotation. So I used it along with zap.
+
+The good thing about zap is that it takes any `io.Writer` interface as a `WriteSyncer` and `file-rotatelogs` returns `*RotateLogs` which implements the `io.Writer` interface.
+
+Here the `rotatelogs.WithRotationTime(time.Hour))` indicates hourly rotation. `rotatelogs.WithMaxAge(60*24*time.Hour)` indicates the files are cleaned up after 60 days.
+```go
+package main
+
+import (
+	"encoding/json"
+	"time"
+
+	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+)
+
+func main() {
+	// initialize the rotator
+	logFile := "/var/log/app-%Y-%m-%d-%H.log"
+	rotator, err := rotatelogs.New(
+		logFile,
+		rotatelogs.WithMaxAge(60*24*time.Hour),
+		rotatelogs.WithRotationTime(time.Hour))
+	if err != nil {
+		panic(err)
+	}
+
+	// initialize the JSON encoding config
+	encoderConfig := map[string]string{
+		"levelEncoder": "capital",
+		"timeKey":      "date",
+		"timeEncoder":  "iso8601",
+	}
+	data, _ := json.Marshal(encoderConfig)
+	var encCfg zapcore.EncoderConfig
+	if err := json.Unmarshal(data, &encCfg); err != nil {
+		panic(err)
+	}
+
+	// add the encoder config and rotator to create a new zap logger
+	w := zapcore.AddSync(rotator)
+	core := zapcore.NewCore(
+		zapcore.NewJSONEncoder(encCfg),
+		w,
+		zap.InfoLevel)
+	logger := zap.New(core)
+
+	logger.Info("Now logging in a rotated file")
+}
+```
+This will create the file `/var/log/app-2020-05-18-15.log`, which is exactly how we wanted it. It will automatically start logging to the next file during the start of the next hour.

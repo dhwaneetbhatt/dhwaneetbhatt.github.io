@@ -1,0 +1,113 @@
+---
+title: "Hosting WriteFreely using Docker"
+date: 2020-04-24
+slug: "/hosting-writefreely-using-docker"
+tags:
+  - AWS
+  - Nginx
+  - Docker
+canonicalUrl: "https://dhwaneetbhatt.com/blog/hosting-writefreely-using-docker"
+---
+
+I recently came across [Writefreely](https://writefreely.org) and it was the perfect solution I was looking for in a long time. I had been [blogging before](https://dhwaneetbhatt.blogspot.com), but I wanted a separate, clean tech blog. Plus I didn't really like Blogspot. I had tried Tumblr in between (also took the pain of migrating from Blogspot to Tumblr and back) but didn't like it too because it felt like a microblogging platform to me. WordPress was too commercial for me. So I didn't really do anything until I hit upon writefreely, and it was perfect - I can self host it, its free, open source, and written in the language that I am currently picking up - Go. <!--more-->
+
+I already had an [AWS Lightsail](https://aws.amazon.com/lightsail/) instance (1 GB Memory, 1 CPU, 40 GB space) with a public static IP which I was using for hosting [my other project](https://github.com/dhwaneetbhatt/ahichhatra-vivah). The box is severely underutilized as the current website running on it is for a small community and doesn't get much traffic. So I decided to host writefreely on this instance. The machine currently ran containers for nginx, mysql and php app (Laravel, soon to be rewritten in Adonisjs).
+
+But there was one problem, writefreely doesn't have a Docker build for Production [yet](https://writefreely.org/docs/latest/admin/docker). I needed running it in docker so nginx can talk to it. There is no way to talk to the host port from inside the container, except for using the public IP of instance, which is not a good way because I'll have to expose the port on which I would run writefreely.
+
+The other option is to clone the repo and build docker from source. I didn't want the trouble of handling a git repo. So I did something unconventional.
+
+I created a docker image out of pre-built writefreely release package. I downloaded the latest release from [github](https://github.com/writeas/writefreely/releases).
+
+## Building and running the image
+
+Go to the home directory (I use Ubuntu so my home directory is `/home/ubuntu`) and run the following:
+```shell
+wget https://github.com/writeas/writefreely/releases/download/v0.12.0/writefreely_0.12.0_linux_amd64.tar.gz
+tar -zxvf writefreely_0.12.0_linux_amd64.tar.gz
+rm -f writefreely_0.12.0_linux_amd64.tar.gz
+cd writefreely
+./writefreely --gen-keys
+```
+Then I ran `./writefreely --config` and chose the following options:
+
+* Production, behind reverse proxy
+* Local Port 8080
+* SQLite database (I didn't want to manage mysql anymore)
+* Single user blog (can select Multi-user if there are multiple blogs/writers)
+* Enter admin username and password
+
+There will be a file generated `config.ini`, with all the options. The `bind` option will be `localhost`. We will have to change that to `0.0.0.0` if we want to host in a container.
+
+After changing that, add a `Dockerfile` in the same directory
+```
+FROM ubuntu:18.04
+
+RUN groupadd --gid 1000 appuser && \
+  useradd --uid 1000 --gid appuser --shell /bin/bash --create-home appuser && \
+  apt-get update && \
+  apt-get install -y --no-install-recommends \
+  openssl ca-certificates net-tools
+
+RUN mkdir -p /app && chown appuser:appuser /app
+
+WORKDIR /app
+USER appuser
+
+EXPOSE 8080
+
+ENTRYPOINT ["./writefreely"]
+```
+I had to choose Ubuntu (instead of the minimal alpine image) because the release downloaded from github does not work with alpine linux (maybe because it is built in Ubuntu). I choose to run any apps using a non-root user because that is a good security practice.
+Build the image using:
+```shell
+docker build . -t mywritefreely
+```
+And then run:
+```shell
+docker run -d --network=prod-network --restart=always --name mywritefreely -v /home/ubuntu/writefreely:/app mywritefreely:latest
+```
+I already have a docker network named `prod-network` running so I attached it to the same network.
+
+## Reverse Proxy with Nginx running in Docker
+
+As I mentioned before, I already had a nginx running as a container. I added a new site in `sites-enabled` which talks to the writefreely container:
+```
+upstream writefreely {
+    server mywritefreely:8080 fail_timeout=0;
+}
+
+server {
+    server_name dhwaneetbhatt.com;
+    listen 80;
+    listen 443 ssl;
+    ssl_session_timeout 5m;
+
+    ssl_certificate /etc/letsencrypt/live/dhwaneetbhatt.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/dhwaneetbhatt.com/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/dhwaneetbhatt.com/chain.pem;
+
+    if ($scheme = http) {
+        return 301 https://$server_name$request_uri;
+    }
+
+    location / {
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_redirect http:// $scheme://;
+        proxy_connect_timeout      240;
+        proxy_send_timeout         240;
+        proxy_read_timeout         240;
+        proxy_pass http://writefreely;
+    }
+ }
+```
+I downloaded the certificates using LetsEncrypt container using the following command:
+```shell
+docker run -it --rm -v /home/ubuntu/certs/letsencrypt/etc:/etc/letsencrypt -p 80:80 deliverous/certbot certonly --standalone -d dhwaneetbhatt.com
+```
+When using `--standalone` we have to be careful we don't have nginx running on port 80 otherwise it would conflict. I prefer this because there are complications doing this with nginx and I prefer a little downtime of 5s rather than setting it up with nginx.
+
+Once done, I started up nginx again and it forwards traffic to the writefreely container.

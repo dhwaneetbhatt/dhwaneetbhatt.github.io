@@ -6,13 +6,27 @@ const shouldAnalyseBundle = process.env.ANALYSE_BUNDLE
 
 module.exports = {
   siteMetadata: {
-    siteTitleAlt: `Minimal Blog - Gatsby Theme`,
+    // Used for the title template on pages other than the index site
+    siteTitle: `Dhwaneet Bhatt`,
+    // Default title of the page
+    siteTitleAlt: `Home | Dhwaneet Bhatt`,
+    // Can be used for e.g. JSONLD
+    siteHeadline: `Dhwaneet Bhatt`,
+    // Will be used to generate absolute URLs for og:image etc.
+    siteUrl: `https://dhwaneetbhatt.com`,
+    // Used for SEO
+    siteDescription: `About Dhwaneet Bhatt`,
+    // Will be set on the <html /> tag
+    siteLanguage: `en-in`,
+    // Twitter Handle
+    author: '@dhwaneetbhatt',
   },
   plugins: [
     {
       resolve: `@lekoarts/gatsby-theme-minimal-blog`,
-      // See the theme's README for all available options
       options: {
+        formatString: 'MMM DD, YYYY',
+        postsPrefix: 'blog',
         navigation: [
           {
             title: `Blog`,
@@ -26,11 +40,11 @@ module.exports = {
         externalLinks: [
           {
             name: `Twitter`,
-            url: `https://twitter.com/lekoarts_de`,
+            url: `https://twitter.com/dhwaneetbhatt`,
           },
           {
-            name: `Instagram`,
-            url: `https://www.instagram.com/lekoarts.de/`,
+            name: `LinkedIn`,
+            url: `https://www.linkedin.com/in/dhwaneetbhatt`,
           },
         ],
       },

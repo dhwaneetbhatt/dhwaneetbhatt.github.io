@@ -1,0 +1,99 @@
+---
+title: "Using AWS Parameters Store"
+date: 2020-05-06
+slug: "/using-aws-parameters-store"
+tags:
+  - AWS
+  - Go
+canonicalUrl: "https://dhwaneetbhatt.com/blog/using-aws-parameters-store"
+---
+
+[AWS Parameters Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html) is a very good candidate for storing secrets and configuration. It supports encryption of parameters at rest. <!--more-->
+
+AWS also has a [Secrets Manager](https://aws.amazon.com/secrets-manager/) which is a more evolved product, and I think it has evolved out of Parameters Store itself. The only benefit it has over Parameters Store is the automatic rotation of keys with other products like RDS. Also, it is not free. It costs $0.40 per secret and $0.05 per 10,000 API calls.
+
+Key rotation can be achieved manually in Parameters Store by writing a lambda, which is a content for a future post. For now, will focus on Parameters Store.
+
+## Storing Secrets in Parameters Store
+
+### AWS Console
+
+Using Parameters Store via AWS Console is very simple. It is located under [Systems Manager](https://aws.amazon.com/systems-manager/) panel.
+
+Parameters Store supports creating `String`, `StringList` and `SecureString` types. When creating `SecureString` parameter, we can choose the KMS key that is required to encrypt the parameters.
+
+### Using AWS CLI
+
+To create a parameter:
+```shell
+aws ssm put-parameter --name "<name>" --value "<value>" --type SecureString --key-id "<kms-key-id>"
+```
+If `SecureString` is not required, `--key-id` parameter can be omitted. If you want to overwrite an existing parameters, pass the flag `--overwrite` to the command.
+
+To test whether the parameter was created:
+```shell
+aws ssm get-parameter --name "<name>" --with-decryption
+```
+If it is not a type `SecureString`, `--with-decryption` is not required. Note that the decryption happens on the server side, the secret is transferred in plaintext (of course over HTTPS).
+
+## Hierarchical Storage
+
+To me, this is hands-down one of the best features of Parameters Store. It supports organizing secrets in a hierarchical format, allowing you to issue fetch requests for a top-level key and retrieve all parameters under it.
+
+[There](https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-su-organize.html) is a complete article on AWS about it. I'll cover a little here.
+
+In Parameters Store, you can define you keys in a hierarchy separated by `/`, for example:
+```shell
+/Dev/Database/Username
+/Dev/Database/Password
+/Dev/Database/Host
+```
+These are called "paths" in the AWS nomenclature. Then, you can issue a single request to fetch all parameters under a path:
+```shell
+aws ssm get-parameters-by-path --path "/Dev/Database" --with-decryption
+```
+This will give out all 3 properties. The response uses pagination and the maximum limit of records is 10.
+
+One can use hierarchical storage to group Development and Production properties separate, or in case of microservices, group properties by service.
+
+For example, following various applications, here is how you can define various properties for different environments:
+```shell
+/Dev/App1/Param1
+/Dev/App1/Param2
+
+/Dev/App2/Param1
+/Dev/App2/Param2
+
+/Prod/App1/Param1
+/Prod/App1/Param2
+
+/Prod/App2/Param1
+/Prod/App2/Param2
+```
+You can then issue a request for `/Dev/App1` or `/Prod/App1` to fetch all properties of the particular app/service.
+
+## Integrating in applications
+
+The easiest and obvious way is to integrate AWS SDK into your application and fetch parameters when needed. There are advantages and disadvantages of this approach.
+
+The only advantage I see is it is intuitive and direct. Using AWS SDK in your app tells that this app needs some functionality of AWS to run. And AWS SDK is available in a lot of languages. 
+
+But, if you have a lot of apps, you end up putting the SDK in all of them (or maybe in a common library) which ends up bloating all the applications. If you want to ever change the way config and secrets are injected into your apps, code change is required in all the applications.
+
+[12-factor](https://12factor.net/config) says that configuration should be injected into the program externally. Most preferred way is to use environment variables. (**Note**: When running apps in containers, the most intuitive way would be to pass environment variables to the container using `-e`. But anyone can see the environment variables passed to the container using `docker inspect`, so I don't believe it to be that secure.)
+
+Thus, the best way is to create configuration at runtime before the actual application starts. That is, run a program that fetches data from Parameters Store and prepares the it in a format the way the app requires it. It could be JSON, YAML or simple environment variables.
+
+The benefit of the approach is that the app simply dictates that it requires the configuration in a particular format, and the way the app is presented with the configuration is the concern of some other program. This works well with switching providers, or using some other source to store secrets.
+
+## Open Source Applications
+
+There are very few open source applications which work with Parameters Store and export variables in a desired format. Before I started working on this problem, I just found one such open source app - [chamber](https://github.com/segmentio/chamber/) (It's name is inspired from Harry Potter's 2nd book, *Chamber of Secrets*).
+
+It is really well maintained, and it does cover a lot of use cases. I evaluated use of chamber for use at my current organization, but it did not fit the requirements, because it does not work with hierarchical configuration in Parameters Store. It supports only one level of hierarchy, where the first level is a service, and the rest all the secrets are stored below it.
+
+As discussed above, we needed to organize our parameters into multiple nested hierarchies, by environment, app etc. So we wrote an open source CLI for it - [configurator](https://github.com/banknovo/configurator). It allows exporting the hierarchical parameters in the store into a nested format like JSON, which is what we required in order to minimize changes, because our apps ingested configuration in JSON config files.
+
+It also has the support for printing `export name=value` on stdout, if someday we move out from JSON files to environment variables. But for now, it served our purpose well and allowed us to move to Parameters Store without a lot of effort or code changes in apps. 
+
+Contributions and feedback to [configurator](https://github.com/banknovo/configurator) are welcome.
