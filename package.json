@@ -5,6 +5,9 @@
   "version": "1.0.0",
   "author": "Dhwaneet Bhat <dhwaneetbhatt@gmail.com>",
   "starter-name": "gatsby-starter-minimal-blog",
+  "engines": {
+    "node": ">=14"
+  },
   "scripts": {
     "build": "gatsby build --prefix-paths",
     "develop": "gatsby develop",
