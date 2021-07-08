@@ -1,0 +1,16 @@
+.gr_grid_container {
+  overflow: hidden;
+}
+
+.gr_grid_book_container {
+  float: left;
+  overflow: hidden;
+  width: 98px;
+  height: 160px;
+  padding: 0px 0px;
+}
+
+.gr_grid_branding {
+  float: right;
+  clear: both;
+}
