@@ -3,11 +3,14 @@
 <url> <loc>https://dhwaneetbhatt.com/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/blog</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/tags</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://dhwaneetbhatt.com/blog/i-am-joining-postman</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/blog/time-based-log-file-rotation-with-zap</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/blog/using-aws-parameters-store</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/blog/hosting-writefreely-using-docker</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/about</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://dhwaneetbhatt.com/books</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/tags/aws</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://dhwaneetbhatt.com/tags/career</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/tags/docker</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/tags/go</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/tags/logging</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
