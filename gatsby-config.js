@@ -28,15 +28,15 @@ module.exports = {
         formatString: 'MMM DD, YYYY',
         navigation: [
           {
-            title: `🖊️ Blog`,
+            title: `Blog`,
             slug: `/blog`,
           },
           {
-            title: `🙋‍♂️ About`,
+            title: `About`,
             slug: `/about`,
           },
           {
-            title: `📚 Books`,
+            title: `Books`,
             slug: `/books`,
           },
         ],
@@ -56,7 +56,13 @@ module.exports = {
         ],
       },
     },
-        {
+    {
+      resolve: `gatsby-plugin-mailchimp`,
+      options: {
+        endpoint: 'https://dhwaneetbhatt.us5.list-manage.com/subscribe/post?u=fbfb75c919a990869e975ec0e&amp;id=c37226aa6c'
+      },
+    },
+    {
       resolve: `gatsby-omni-font-loader`,
       options: {
         enableListener: true,
