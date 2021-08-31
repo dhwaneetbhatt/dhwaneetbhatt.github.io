@@ -3,6 +3,7 @@
 <url> <loc>https://dhwaneetbhatt.com/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/blog</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/tags</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://dhwaneetbhatt.com/blog/book-review-working-backwards</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/blog/book-review-the-almanack-of-naval-ravikant</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/blog/i-am-joining-postman</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/blog/time-based-log-file-rotation-with-zap</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
@@ -12,6 +13,7 @@
 <url> <loc>https://dhwaneetbhatt.com/books</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/tags/aws</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/tags/book-review</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://dhwaneetbhatt.com/tags/business</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/tags/career</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/tags/docker</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/tags/go</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
