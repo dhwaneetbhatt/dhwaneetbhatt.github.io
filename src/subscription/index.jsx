@@ -31,7 +31,7 @@ class SubscriptionComponent extends React.Component {
         <Heading sx={{ fontSize: [1, 2, 3], color: 'text', mb: 3, fontWeight: 'normal' }}>
           Subscribe for updates
         </Heading>
-        <Grid gap={2} columns={[3]}>
+        <Grid gap={2} columns={[2]}>
           <Box mb={3}>
             <Input
               type='email'
