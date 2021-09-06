@@ -1,0 +1,176 @@
+---
+title: "Run Docker without Docker Desktop on macOS"
+date: 2021-09-06
+slug: "/blog/run-docker-without-docker-desktop-on-macos"
+tags:
+  - docker
+  - macOS
+canonicalUrl: "https://dhwaneetbhatt.com/blog/run-docker-without-docker-desktop-on-macos"
+---
+Docker Inc. [recently announced](https://www.docker.com/blog/updating-product-subscriptions/) that Docker Desktop would no longer remain a free product for large organizations. It will remain free for personal and open-source projects and for organizations smaller than a certain size. Usually this is not a cause for concern as a company with revenue greater than $10 million would be able to afford Docker Desktop's $5 per user/month starter pricing. This post does in no way discourages organizations in paying and I believe that Docker Inc. has all the rights to monetize their product.
+
+With the disclaimer out of the way, let us deep dive into explaining a little around what is free, what is paid and how exactly can we continue to use "containers", the core technology, without having to pay for Docker Desktop.
+
+---
+This digression explains terminology around Docker. Experts who know Docker can skip this part.
+
+Docker can mean a lot of things. I'll try to break down and explain each term. This is by no means a full conceptual architectural explanation of how Docker works and I would recommend exploring other resources on the web for that purpose. This digression is just meant to ease the rest of the discussion.
+
+- [Docker Inc](https://en.wikipedia.org/wiki/Docker%2C_Inc.) - It is a USA based company that produces some open-source and not-open source software that makes it easier to develop, test and run applications in containers.
+- [Docker Engine](https://github.com/docker/engine) - The core technology behind Docker. It is an open source software that runs on linux as a daemon that makes it possible to run containers on top of Linux kernel. It is responsible for the container lifecycle and isolation of physical resources (compute, memory, storage) that containers can access. The engine can run on a physical or a virtual machine, but it can only run on top of a Linux kernel i.e. any OS that is flavour of Linux. This is important to understand. **Docker engine only runs on Linux.**
+- [Docker CLI](https://github.com/docker/cli) - This is the CLI that developers usually use to interact with the docker engine. This consists both of `docker` and `docker-compose` commands. Again, this is open source software.
+- [Docker Desktop](https://www.docker.com/products/docker-desktop) - Since Docker Engine only runs on Linux, developers who use Windows and macOS for software development cannot run the engine until they spin up a virtual machine (VM) that runs linux. That is where Docker Desktop comes in. Docker Desktop is a closed-source software that allows developers working on Windows/macOS to use container technology seamlessly on their development environment without needing to manage the complexity of operating a VM and all the nitty-gritty that comes along with it (networking, virtualization, knowledge of linux etc.). Docker Desktop is meant to be used during software development, it does not play a part in containers that run on production-like environments, where only Docker Engine is mostly involved.
+
+Docker Desktop is not the core technology that runs containers, it only aims to make it easier to develop software on Windows/macOS that runs in containers. Thus Docker Inc. is only trying to get large companies to pay for the convenience that Docker Desktop offers when developing applications. So, I completely sympathise with the move for trying to earn revenue from a product that their software developers have worked so hard to develop. Company's other revenue comes from [Docker Hub](https://hub.docker.com/).
+
+---
+The way to continue to run and build applications for containers on macOS would be run Docker Engine on a Linux VM. I discussed two approaches that I've tried on my development environment (Macbook Pro 13" 2020 Intel Chip). This list is not exhaustive and they maybe more ways to do this. This post does assume some working knowledge of Docker.
+
+Before doing this, uninstall Docker Desktop by removing `/Applications/Docker.app`. Sometimes this is not enough and it leaves certain things so I recommend searching for "uninstall docker desktop on macos" and follow a guide for full cleanup.
+
+# minikube
+
+So far, [minikube](https://minikube.sigs.k8s.io/docs/) has emerged the easiest drop-in replacement for Docker Desktop. minikube is used to run a Kubernetes cluster on local environment. But it also runs a docker daemon that can be used to run containers. On macOS, minikube runs on a lot of virtualization technologies, but [hyperkit](https://minikube.sigs.k8s.io/docs/drivers/hyperkit/) is the easiest to use.
+
+```bash
+# Install hyperkit and minikube
+brew install hyperkit
+brew install minikube
+
+# Install Docker CLI
+brew install docker
+brew install docker-compose
+
+# Start minikube
+minikube start
+
+# Tell Docker CLI to talk to minikube's VM
+eval $(minikube docker-env)
+
+# Save IP to a hostname
+echo "`minikube ip` docker.local" | sudo tee -a /etc/hosts > /dev/null
+
+# Test
+docker run hello-world
+```
+
+## minikube Cheatsheet
+
+`minikube stop` - stop the VM and k8s cluster. This does not delete any data. Just run `minikube start` to spin up the cluster.
+
+`minikube delete` - This **deletes** the cluster with all the data. All mapped volumes will be lost. Know what you're doing before running this. If you just want to stop the cluster use `minikube stop`.
+
+`minikube ip` - IP address of the VM where the cluster and docker engine run.
+
+minikube runs a k8s setup and thus runs a lot of containers that are not required if not using k8s. We can run `minikube pause` to pause k8s related containers so they do not end up consuming system resources.
+
+# Manually managing the VM
+
+If you already use a Linux VM locally for some other purposes or want more control over the setup, then this can be a good option. For this purpose we'll use [VirtualBox](https://www.virtualbox.org/) to run the Linux VM and use [Vagrant](https://www.vagrantup.com/) to make provisioning the VM easy and codified. We will use Ubuntu 20.04 LTS as the base OS for the VM.
+
+```bash
+# Install VirtualBox
+brew install --cask virtualbox
+brew install --cask virtualbox-extension-pack
+
+# Install Vagrant and the vbguest plugin to manage VirtualBox Guest Additions on the VM
+brew install vagrant
+vagrant plugin install vagrant-vbguest
+
+# Install Docker CLI
+brew install docker
+brew install docker-compose
+
+# Create a Vagrantfile and a provisioning script
+mkdir vagrant-docker-engine
+echo \
+"Vagrant.configure('2') do |config|
+  config.vm.box = 'ubuntu/focal64'
+  config.vm.hostname = 'docker.local'
+	config.vm.network 'private_network', ip: '192.168.66.4'
+  config.vm.network 'forwarded_port', guest: 2375, host: 2999, id: 'dockerd'
+  config.vm.provider 'virtualbox' do |vb|
+    vb.name = 'ubuntu-docker'
+    vb.memory = '2048'
+    vb.cpus = '2'
+  end
+  config.vm.provision 'shell', path: 'provision.sh'
+  
+  # Configuration for Port Forwarding
+  # Uncomment or add new ones here as required
+  # config.vm.network 'forwarded_port', guest: 6379, host: 6379, id: 'redis'
+  # config.vm.network 'forwarded_port', guest: 3306, host: 3306, id: 'mysql'
+end" | tee Vagrantfile > /dev/null
+echo \
+"# Install Docker
+apt-get remove docker docker-engine docker.io containerd runc
+apt-get update
+apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release net-tools software-properties-common
+curl -fsSL <https://download.docker.com/linux/ubuntu/gpg> | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] <https://download.docker.com/linux/ubuntu> focal stable' | tee /etc/apt/sources.list.d/docker.list > /dev/null
+apt-get update
+apt-get install -y docker-ce docker-ce-cli containerd.io
+
+# Configure Docker to listen on a TCP socket
+mkdir /etc/systemd/system/docker.service.d
+echo \\
+'[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd --containerd=/run/containerd/containerd.sock' | tee /etc/systemd/system/docker.service.d/docker.conf > /dev/null
+echo \\
+'{
+  \"hosts\": [\"fd://\", \"tcp://0.0.0.0:2375\"]
+}' | tee /etc/docker/daemon.json > /dev/null
+systemctl daemon-reload
+systemctl restart docker.service" | tee provision.sh > /dev/null
+chmod +x provision.sh
+
+# Spin up the machine
+vagrant up
+
+# Save IP to a hostname
+echo "192.168.66.4 docker.local" | sudo tee -a /etc/hosts > /dev/null
+
+# Tell Docker CLI to talk to the VM
+export DOCKER_HOST=http://docker.local:2375
+
+# Optionally add it to your shell so don't need to repeat everytime
+# echo "export DOCKER_HOST=http://docker.local:2375" | tee -a ~/.zshrc > /dev/null
+
+# Test
+docker run hello-world
+```
+
+## Vagrant Cheatsheet
+
+`vagrant suspend` - stop the VM for saving system resources. This does not delete any data. Just run `vagrant up` to spin up the VM.
+
+`vagrant reload` - for reloading the VM for any changes made to the config e.g. adding a new port mapping.
+
+`vagrant delete` - This **deletes** the VM with all the data. All mapped volumes will be lost. Know what you're doing before running this. If you just want to stop the VM use `vagrant suspend`.
+
+For every port that we want to natively access on macOS host, we need to modify the `Vagrantfile` to add port forwarding. Use `vagrant reload` after changing the file. Some examples have already been provided in the `Vagrantfile` for reference.
+
+# Caveats
+
+## Accessing Ports
+
+Docker Desktop makes it very convenient to access services/apps running on containers by making everything available on localhost. How they exactly do it is unknown, although it must involve some port mapping via hyperkit, but we must do this manually.
+
+Both in the minikube and virtualbox guides above, we make the IP address of the VM available under `docker.local` hostname so to access any services we must use that hostname instead of using localhost.
+
+Using Vagrant we can actually do double port mapping (between container ↔  linux and linux ↔  host) to access stuff on localhost. That can be done my adding `forwarded_port` entries in `Vagrantfile` as mentioned above.
+
+## Volumes and Data Persistence
+
+Since the Docker Engine is running on the VM, any volumes created or mapped will be present on the Linux VM, not on the macOS (host). **This is very important to remember.** This means that by destroying the VM we will lose access to the data in the volumes. Volumes are generally used for persistent databases like MySQL, PostgreSQL etc.
+
+There are ways in which `vagrant` allows you to map folders to the VM, that would again be 3 layer-mapping like ports mentioned above, but becomes very complicated because or permission issues in the way Docker works. I tried a lot and could not make it work for MySQL. I could if I put in some extra hours, but the point is that it is cumbersome.
+
+My advice would be to backup volumes to a location on the VM and pull that backup to the host either via `scp` if you're using `minikube` or `vagrant` has a default drive mapped at `/vagrant` which can be used for backup. Thankfully, [backing up volumes is easy](https://docs.docker.com/storage/volumes/#backup-restore-or-migrate-data-volumes) and it can be put in a cronjob on the VM/host if needed.
+
+## Performance
+
+If you're using `minikube`, performance more or less remains the same because same underlying virtualization technology (hyperkit) is being employed. But for some strange reasons, I saw a huge jump in performance in read/write performance on MySQL when using `vagrant + virtualbox` combination. I have not delved into the reasons of it, but that has made to stick to it. I am yet to try `minikube + virtualbox` combination.
+
+`minikube` actually runs a kubernetes cluster on the VM so if that is not needed, doing a `minikube pause` will make sure k8s cluster related containers are suspended so they do not consume any system resources.
