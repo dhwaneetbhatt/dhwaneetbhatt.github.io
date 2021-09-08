@@ -1,1 +1,5 @@
-{"componentChunkName":"component---node-modules-lekoarts-gatsby-theme-minimal-blog-core-src-templates-tags-query-tsx","path":"/tags","result":{"data":{"allPost":{"group":[{"fieldValue":"aws","totalCount":2},{"fieldValue":"book-review","totalCount":2},{"fieldValue":"business","totalCount":1},{"fieldValue":"career","totalCount":1},{"fieldValue":"docker","totalCount":2},{"fieldValue":"go","totalCount":2},{"fieldValue":"logging","totalCount":1},{"fieldValue":"macOS","totalCount":1},{"fieldValue":"nginx","totalCount":1},{"fieldValue":"philosophy","totalCount":1}]}},"pageContext":{}},"staticQueryHashes":["2744905544","3090400250","318001574"]}
+{
+    "componentChunkName": "component---node-modules-lekoarts-gatsby-theme-minimal-blog-core-src-templates-tags-query-tsx",
+    "path": "/tags",
+    "result": {"data":{"allPost":{"group":[{"fieldValue":"aws","totalCount":2},{"fieldValue":"book-review","totalCount":2},{"fieldValue":"business","totalCount":1},{"fieldValue":"career","totalCount":1},{"fieldValue":"docker","totalCount":2},{"fieldValue":"go","totalCount":2},{"fieldValue":"logging","totalCount":1},{"fieldValue":"macOS","totalCount":1},{"fieldValue":"nginx","totalCount":1},{"fieldValue":"philosophy","totalCount":1}]}},"pageContext":{}},
+    "staticQueryHashes": ["2744905544","3090400250","318001574"]}
