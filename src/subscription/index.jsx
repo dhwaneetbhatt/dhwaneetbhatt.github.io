@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { Heading, Grid, Box, Input, Button, Text, Link } from 'theme-ui';
+import { Box, Button, Grid, Heading, Input, Link, Text } from 'theme-ui';
 
-const SubscriptionComponent = () => {
+function SubscriptionComponent () {
   return (
     <Box
       as='form'
