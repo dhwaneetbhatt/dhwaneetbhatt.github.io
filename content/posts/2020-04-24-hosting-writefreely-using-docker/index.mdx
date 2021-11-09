@@ -9,6 +9,8 @@ tags:
 canonicalUrl: "https://dhwaneetbhatt.com/blog/hosting-writefreely-using-docker"
 ---
 
+*Update: As of July 2021, WriteFreely was retired and I now use GatsbyJS and GitHub Pages to host this blog. I did not want to continue paying for an EC2 server when amazing free alternatives were available.*
+
 I recently came across [Writefreely](https://writefreely.org) and it was the perfect solution I was looking for in a long time. I had been [blogging before](https://dhwaneetbhatt.blogspot.com), but I wanted a separate, clean tech blog. Plus I didn't really like Blogspot. I had tried Tumblr in between (also took the pain of migrating from Blogspot to Tumblr and back) but didn't like it too because it felt like a microblogging platform to me. WordPress was too commercial for me. So I didn't really do anything until I hit upon writefreely, and it was perfect - I can self host it, its free, open source, and written in the language that I am currently picking up - Go. <!--more-->
 
 I already had an [AWS Lightsail](https://aws.amazon.com/lightsail/) instance (1 GB Memory, 1 CPU, 40 GB space) with a public static IP which I was using for hosting [my other project](https://github.com/dhwaneetbhatt/ahichhatra-vivah). The box is severely underutilized as the current website running on it is for a small community and doesn't get much traffic. So I decided to host writefreely on this instance. The machine currently ran containers for nginx, mysql and php app (Laravel, soon to be rewritten in Adonisjs).
