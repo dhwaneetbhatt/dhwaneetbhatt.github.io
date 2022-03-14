@@ -3,6 +3,7 @@
 <url> <loc>https://dhwaneetbhatt.com/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/blog</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/tags</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://dhwaneetbhatt.com/blog/evaluating-job-offers</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/blog/jobs-vs-careers</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/blog/book-review-the-rational-optimist</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/blog/run-docker-without-docker-desktop-on-macos</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>

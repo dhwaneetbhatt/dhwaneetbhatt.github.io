@@ -1,5 +1,5 @@
 {
     "componentChunkName": "component---node-modules-lekoarts-gatsby-theme-minimal-blog-core-src-templates-tags-query-tsx",
     "path": "/tags",
-    "result": {"data":{"allPost":{"group":[{"fieldValue":"aws","totalCount":2},{"fieldValue":"book-review","totalCount":3},{"fieldValue":"business","totalCount":1},{"fieldValue":"career","totalCount":2},{"fieldValue":"docker","totalCount":2},{"fieldValue":"economics","totalCount":1},{"fieldValue":"go","totalCount":2},{"fieldValue":"history","totalCount":1},{"fieldValue":"logging","totalCount":1},{"fieldValue":"macOS","totalCount":1},{"fieldValue":"nginx","totalCount":1},{"fieldValue":"philosophy","totalCount":2}]}},"pageContext":{}},
+    "result": {"data":{"allPost":{"group":[{"fieldValue":"aws","totalCount":2},{"fieldValue":"book-review","totalCount":3},{"fieldValue":"business","totalCount":1},{"fieldValue":"career","totalCount":3},{"fieldValue":"docker","totalCount":2},{"fieldValue":"economics","totalCount":1},{"fieldValue":"go","totalCount":2},{"fieldValue":"history","totalCount":1},{"fieldValue":"logging","totalCount":1},{"fieldValue":"macOS","totalCount":1},{"fieldValue":"nginx","totalCount":1},{"fieldValue":"philosophy","totalCount":2}]}},"pageContext":{}},
     "staticQueryHashes": ["2744905544","3090400250","318001574"]}
