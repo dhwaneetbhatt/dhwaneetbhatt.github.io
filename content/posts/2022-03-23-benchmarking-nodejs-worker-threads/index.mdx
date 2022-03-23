@@ -1,0 +1,183 @@
+---
+title: "Benchmarking Node.js Worker Threads"
+date: 2022-03-23
+slug: "/blog/benchmarking-nodejs-worker-threads"
+tags:
+  - nodejs
+  - benchmarking
+canonicalUrl: "https://dhwaneetbhatt.com/blog/benchmarking-nodejs-worker-threads"
+---
+
+[NodeJS official documentation](https://nodejs.org/docs/latest-v16.x/api/worker_threads.html#worker-threads) states that there is no real benefit of using worker threads for I/O, but wanted to benchmark it to understand the difference.
+
+## Setup
+
+We used [Benchmark.js](https://github.com/bestiejs/benchmark.js) for benchmarking and [piscina](https://github.com/piscinajs/piscina) as a pool for worker threads. `benchmark.js` was used to run the same code in 2 scenarios - one using a single thread and one using the `piscina` pool. The degree of parallelism was passed to the program via an environment variable. The test code is present in `worker.js` in both the cases.
+
+These tests were run on a [Macbook Pro (13-inch, 2020, Intel CPU)](https://support.apple.com/kb/SP819?locale=en_US) with 2.3 GHz Quad-Core Intel Core i7 (8 CPU cores) and 16GB of memory. The tests were run from an embedded terminal in VSCode. No other foreground processes were running.
+
+[Httpbin](https://httpbin.org) was used for testing I/O. This has the disadvantage of being slow vs a locally hosted mock server but reduces noise as I didn't want a competing server process sharing the same resources.
+
+```javascript
+// benchmark.js
+const path = require("path"),
+  Benchmark = require("benchmark"),
+  suite = new Benchmark.Suite(),
+  Piscina = require("piscina"),
+  pool = new Piscina({
+    idleTimeout: 5000,
+    filename: path.resolve(__dirname, "./worker.js"),
+  }),
+  method = require("./worker");
+
+const parallelism = parseInt(process.env.P);
+
+suite
+  .add("single thread", {
+    defer: true,
+    fn: async function (deferred) {
+      const promises = [];
+      for (let i = 0; i < parallelism; i++) {
+        promises.push(method());
+      }
+      await Promise.all(promises);
+      deferred.resolve();
+    },
+  })
+  .add("worker threads", {
+    defer: true,
+    fn: async function (deferred) {
+      const promises = [];
+      for (let i = 0; i < parallelism; i++) {
+        promises.push(pool.run());
+      }
+      await Promise.all(promises);
+      deferred.resolve();
+    },
+  })
+  .on("cycle", function (event) {
+    console.log(String(event.target));
+  })
+  .on("complete", function () {
+    console.log("Done");
+  })
+  .run();
+```
+Default options for `piscina`.
+```json
+{
+	"filename": "worker.js",
+	"name": "default",
+	"minThreads": 4,
+	"maxThreads": 12,
+	"idleTimeout": 5000,
+	"maxQueue": null,
+	"concurrentTasksPerWorker": 1,
+	"useAtomics": true,
+	"taskQueue": {
+		"tasks": []
+	},
+	"niceIncrement": 0,
+	"trackUnmanagedFds": true
+}
+```
+
+## Only I/O
+Send an HTTP request to an endpoint.
+
+```javascript
+// worker.js
+const request = require('request-promise');
+
+module.exports = () => {
+  return request('https://httpbin.org/get');
+};
+```
+
+| Parallelism  | Single Thread | Worker Threads |
+|--------------|---------------|----------------|
+| 1            | 1.15 ops/sec ±15.95% (11 runs sampled) | 1.30 ops/sec ±15.04% (12 runs sampled) |
+| 2            | 1.20 ops/sec ±13.77% (11 runs sampled) | 1.32 ops/sec ±12.93% (11 runs sampled) |
+| 4            | 1.29 ops/sec ±19.01% (11 runs sampled) | 1.32 ops/sec ±10.32% (11 runs sampled) |
+| 8            | 1.09 ops/sec ±33.97% (10 runs sampled) | 1.16 ops/sec ±22.55% (12 runs sampled) |
+| 16           | 1.09 ops/sec ±17.84% (10 runs sampled) | 0.62 ops/sec ±28.86% (8 runs sampled)  |
+| 32           | 1.09 ops/sec ±20.92% (10 runs sampled) | 0.41 ops/sec ±38.40% (7 runs sampled)  |
+| 64           | 0.72 ops/sec ±20.05% (8 runs sampled)  | 0.23 ops/sec ±26.54% (6 runs sampled)  |
+| 128          | 0.64 ops/sec ±39.99% (8 runs sampled)  | 0.13 ops/sec ±14.95% (5 runs sampled)  |
+
+### Observations
+- No significant performance benefits over using a single thread.
+- Multi-threaded performance starts to degrade as parallelism increases beyond `maxThreads`.
+- Single thread performance also takes a hit as parallelism increases, but owing to large standard deviation, this could be because of server performance too.
+
+## CPU and I/O
+Send an HTTP request to an endpoint after calculating fibbonacci recursively.
+
+```javascript
+// worker.js
+const request = require('request-promise');
+
+function fibonacci(n) {
+    if (n < 2)
+      return 1;
+    else
+      return fibonacci(n - 2) + fibonacci(n - 1);
+}
+
+module.exports = async () => {
+    fibonacci(20);
+    await request('https://httpbin.org/get');
+};
+```
+
+| Parallelism  | Single Thread | Worker Threads |
+|--------------|---------------|----------------|
+| 1            | 1.04 ops/sec ±20.11% (10 runs sampled) | 1.41 ops/sec ±7.75% (12 runs sampled)   |
+| 2            | 1.38 ops/sec ±14.02% (12 runs sampled) | 1.46 ops/sec ±6.33% (12 runs sampled)   |
+| 4            | 1.10 ops/sec ±18.55% (10 runs sampled) | 1.36 ops/sec ±11.84% (11 runs sampled)  |
+| 8            | 1.04 ops/sec ±13.21% (10 runs sampled) | 1.08 ops/sec ±23.24% (11 runs sampled)  |
+| 16           | 1.10 ops/sec ±14.28% (11 runs sampled) | 0.93 ops/sec ±59.30% (11 runs sampled)  |
+| 32           | 1.04 ops/sec ±15.95% (10 runs sampled) | 0.68 ops/sec ±84.99% (10 runs sampled)  |
+| 64           | 0.69 ops/sec ±33.10% (9 runs sampled)  | 0.29 ops/sec ±110.97% (7 runs sampled)  |
+| 128          | 0.72 ops/sec ±20.01% (8 runs sampled)  | 0.20 ops/sec ±146.04% (9 runs sampled)  |
+
+### Observations
+- I/O trumps CPU work, maybe a larger fibbonacci number could've provided different results.
+- Using worker threads is slightly better when parallelism is less than `maxThreads` but beyond that no advantage.
+
+## Only CPU
+Calculate fibbonacci recursively.
+
+```javascript
+// worker.js
+function fibonacci(n) {
+    if (n < 2)
+      return 1;
+    else
+      return fibonacci(n - 2) + fibonacci(n - 1);
+}
+
+module.exports = async () => {
+  fibonacci(20);
+};
+```
+
+| Parallelism  | Single Thread | Worker Threads |
+|--------------|---------------|----------------|
+| 1            | 9,359 ops/sec ±1.05% (81 runs sampled) | 7,048 ops/sec ±1.35% (83 runs sampled)  |
+| 2            | 4,484 ops/sec ±1.94% (81 runs sampled) | 6,678 ops/sec ±3.26% (83 runs sampled)  |
+| 4            | 2,363 ops/sec ±0.83% (86 runs sampled) | 5,390 ops/sec ±2.11% (84 runs sampled)  |
+| 8            | 1,180 ops/sec ±0.85% (87 runs sampled) | 1,632 ops/sec ±20.82% (68 runs sampled) |
+| 16           | 581 ops/sec ±0.78% (85 runs sampled)   | 726 ops/sec ±28.02% (68 runs sampled)   |
+| 32           | 293 ops/sec ±0.86% (84 runs sampled)   | 493 ops/sec ±16.54% (66 runs sampled)   |
+| 64           | 145 ops/sec ±1.02% (82 runs sampled)   | 266 ops/sec ±15.86% (69 runs sampled)   |
+| 128          | 68.47 ops/sec ±1.62% (80 runs sampled) | 106 ops/sec ±35.60% (63 runs sampled)   |
+
+### Observations
+- For CPU intensive work, use worker threads.
+
+## Conclusion
+- Worker threads for pure I/O based work do not provide any significant performance improvements. At higher parallelism, it performs worse than a single thread.
+- Worker threads provide significant performance benefits for CPU intensive work.
+- For mixed workloads, YMMV. There could be a minor performance bump as the CPU intensive work is offloaded to threads, but it depends on the time spent in CPU vs I/O.
+- Worker threads work well when parallelism is less than the number of CPU cores on the machine. Beyond that, performance starts to dip as the pool starts to queue work.
