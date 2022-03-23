@@ -3,6 +3,7 @@
 <url> <loc>https://dhwaneetbhatt.com/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/blog</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/tags</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://dhwaneetbhatt.com/blog/benchmarking-nodejs-worker-threads</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/blog/evaluating-job-offers</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/blog/jobs-vs-careers</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/blog/book-review-the-rational-optimist</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
@@ -16,6 +17,7 @@
 <url> <loc>https://dhwaneetbhatt.com/about</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/books</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/tags/aws</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://dhwaneetbhatt.com/tags/benchmarking</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/tags/book-review</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/tags/business</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/tags/career</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
@@ -26,5 +28,6 @@
 <url> <loc>https://dhwaneetbhatt.com/tags/logging</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/tags/mac-os</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/tags/nginx</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://dhwaneetbhatt.com/tags/nodejs</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://dhwaneetbhatt.com/tags/philosophy</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 </urlset>

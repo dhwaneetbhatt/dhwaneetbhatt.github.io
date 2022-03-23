@@ -1,0 +1,5 @@
+{
+    "componentChunkName": "component---node-modules-lekoarts-gatsby-theme-minimal-blog-core-src-templates-tag-query-tsx",
+    "path": "/tags/nodejs",
+    "result": {"data":{"allPost":{"nodes":[{"slug":"/blog/benchmarking-nodejs-worker-threads","title":"Benchmarking Node.js Worker Threads","date":"Mar 23, 2022","excerpt":"NodeJS official documentation  states that there is no real benefit of using worker threads for I/O, but wanted to benchmark it to…","timeToRead":1,"description":null,"tags":[{"name":"nodejs","slug":"nodejs"},{"name":"benchmarking","slug":"benchmarking"}]}]}},"pageContext":{"slug":"nodejs","name":"nodejs","formatString":"MMM DD, YYYY"}},
+    "staticQueryHashes": ["2744905544","3090400250","318001574"]}
