@@ -1,5 +1,0 @@
-{
-    "componentChunkName": "component---node-modules-lekoarts-gatsby-theme-minimal-blog-core-src-templates-tag-query-tsx",
-    "path": "/tags/business",
-    "result": {"data":{"allPost":{"nodes":[{"slug":"/blog/book-review-working-backwards","title":"Book Review - Working Backwards","date":"Aug 31, 2021","excerpt":"Update: I have been reading lot more than I anticipated. To keep the blog clean and focused, I will add future book reviews  here  and not…","timeToRead":4,"description":null,"tags":[{"name":"book-review","slug":"book-review"},{"name":"business","slug":"business"}]}]}},"pageContext":{"slug":"business","name":"business","formatString":"MMM DD, YYYY"}},
-    "staticQueryHashes": ["2744905544","3090400250","318001574"]}
