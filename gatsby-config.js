@@ -2,8 +2,6 @@ require(`dotenv`).config({
   path: `.env`,
 })
 
-const shouldAnalyseBundle = process.env.ANALYSE_BUNDLE
-
 module.exports = {
   siteMetadata: {
     // Used for the title template on pages other than the index site
@@ -85,7 +83,6 @@ module.exports = {
         icon: `static/icon.png`
       },
     },
-    `gatsby-plugin-offline`,
     {
       resolve: `gatsby-plugin-google-gtag`,
       options: {
@@ -99,14 +96,6 @@ module.exports = {
           respectDNT: true,
         },
       },
-    },
-    shouldAnalyseBundle && {
-      resolve: `gatsby-plugin-webpack-bundle-analyser-v2`,
-      options: {
-        analyzerMode: `static`,
-        reportFilename: `_bundle.html`,
-        openAnalyzer: false,
-      },
-    },
+    }
   ].filter(Boolean),
 }

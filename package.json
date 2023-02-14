@@ -6,7 +6,7 @@
   "author": "Dhwaneet Bhat <dhwaneetbhatt@gmail.com>",
   "starter-name": "gatsby-starter-minimal-blog",
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "scripts": {
     "build": "gatsby build --prefix-paths",
@@ -22,15 +22,13 @@
     "gatsby-omni-font-loader": "2.x",
     "gatsby-plugin-google-gtag": "4.x",
     "gatsby-plugin-manifest": "4.x",
-    "gatsby-plugin-offline": "5.x",
     "gatsby-plugin-sitemap": "5.x",
-    "gatsby-plugin-webpack-bundle-analyser-v2": "1.x",
     "react": "17.x",
     "react-dom": "17.x",
     "theme-ui": "0.x"
   },
   "devDependencies": {
-    "cross-env": "7.x",
-    "gh-pages": "3.x"
+    "cross-env": "^7.0.0",
+    "gh-pages": "^5.0.0"
   }
 }
