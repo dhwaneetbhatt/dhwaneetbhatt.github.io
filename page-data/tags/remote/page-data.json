@@ -1,5 +1,5 @@
 {
     "componentChunkName": "component---node-modules-lekoarts-gatsby-theme-minimal-blog-core-src-templates-tag-query-tsx",
     "path": "/tags/remote",
-    "result": {"data":{"allPost":{"nodes":[{"slug":"/blog/the-tech-remote-work-debate","title":"The Tech Remote Work Debate","date":"Jul 28, 2023","excerpt":"The remote work debate has ignited as some companies have mandated a return to the office. Having explored both sides of the argument, it's…","timeToRead":2,"description":null,"tags":[{"name":"career","slug":"career"},{"name":"remote","slug":"remote"}]}]}},"pageContext":{"slug":"remote","name":"remote","formatString":"MMM DD, YYYY"}},
+    "result": {"data":{"allPost":{"nodes":[{"slug":"/blog/the-tech-remote-work-debate","title":"The Tech Remote Work Debate","date":"Jul 28, 2023","excerpt":"The remote work debate has ignited as some companies have mandated a return to the office. Having explored both sides of the argument, it's…","timeToRead":3,"description":null,"tags":[{"name":"career","slug":"career"},{"name":"remote","slug":"remote"}]}]}},"pageContext":{"slug":"remote","name":"remote","formatString":"MMM DD, YYYY"}},
     "staticQueryHashes": ["2744905544","3090400250","318001574"]}
