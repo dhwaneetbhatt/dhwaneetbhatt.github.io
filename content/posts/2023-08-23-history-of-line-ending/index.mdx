@@ -1,0 +1,20 @@
+---
+title: "Why CRLF vs LF"
+date: 2023-08-23
+slug: "/blog/why-crlf-vs-lf"
+tags:
+  - programming
+  - systems
+canonicalUrl: "https://dhwaneetbhatt.com/blog/why-crlf-vs-lf"
+---
+Programmers often grapple with varying line endings across diverse operating systems. I've encountered this frustration multiple times when opening a file created on Unix-like systems (such as Linux and macOS) in Windows, only to find one long line without any breaks.
+
+This issue arises because Windows uses CRLF (`\r\n`) to denote the newline character, while Unix-like systems represent it using LF (`\n`).
+
+The origins of this discrepancy can be traced back to the 1960s, when many early computer systems adopted [TeleType](https://en.wikipedia.org/wiki/Teletype_Corporation) machines as their console devices. These machines featured a physical print head that moved to print characters on tape. To transition to the next line, the print head had to return from the far right to the left and then move the paper upward to continue printing from the left. Consequently, the instruction for moving to the next line comprised a Carriage Return (return to the initial position) and a Line Feed (add an extra line).
+
+Subsequent operating systems, including [CP/M](https://en.wikipedia.org/wiki/CP/M), which was designed for Intel 8080/85-based computers, adhered to this convention. MS-DOS inherited it from CP/M during its development, and the practice endured.
+
+The [Multics](https://en.wikipedia.org/wiki/Multics) operating system recognized this as wasteful and integrated logic into device drivers to identify the LF character and translate it as necessary for physical devices. Unix followed suit, and as a result, all Unix-like systems - comprising various Linux distributions and macOS - use LF as the line ending character.
+
+It's intriguing that a decision made in the era of printing tape persists and continues to challenge developers today. Consequently, many programs dealing with files, such as text editors and version control systems, must accommodate both types of line endings. Some decisions, it seems, are indeed irreversible, but they certainly possess a captivating historical context.
