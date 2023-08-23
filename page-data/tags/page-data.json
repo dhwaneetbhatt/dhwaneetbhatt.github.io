@@ -1,5 +1,5 @@
 {
     "componentChunkName": "component---node-modules-lekoarts-gatsby-theme-minimal-blog-core-src-templates-tags-query-tsx",
     "path": "/tags",
-    "result": {"data":{"allPost":{"group":[{"fieldValue":"aws","totalCount":2},{"fieldValue":"benchmarking","totalCount":1},{"fieldValue":"career","totalCount":5},{"fieldValue":"docker","totalCount":2},{"fieldValue":"go","totalCount":2},{"fieldValue":"logging","totalCount":1},{"fieldValue":"macOS","totalCount":1},{"fieldValue":"nginx","totalCount":1},{"fieldValue":"nodejs","totalCount":1},{"fieldValue":"philosophy","totalCount":1},{"fieldValue":"remote","totalCount":1}]}},"pageContext":{}},
+    "result": {"data":{"allPost":{"group":[{"fieldValue":"aws","totalCount":2},{"fieldValue":"benchmarking","totalCount":1},{"fieldValue":"career","totalCount":5},{"fieldValue":"docker","totalCount":2},{"fieldValue":"go","totalCount":2},{"fieldValue":"logging","totalCount":1},{"fieldValue":"macOS","totalCount":1},{"fieldValue":"nginx","totalCount":1},{"fieldValue":"nodejs","totalCount":1},{"fieldValue":"philosophy","totalCount":1},{"fieldValue":"programming","totalCount":1},{"fieldValue":"remote","totalCount":1},{"fieldValue":"systems","totalCount":1}]}},"pageContext":{}},
     "staticQueryHashes": ["2744905544","3090400250","318001574"]}
