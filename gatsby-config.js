@@ -93,6 +93,7 @@ module.exports = {
           anonymize_ip: true,
         },
         pluginConfig: {
+          head: true,
           respectDNT: true,
         },
       },
