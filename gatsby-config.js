@@ -1,6 +1,6 @@
 require(`dotenv`).config({
   path: `.env`,
-})
+});
 
 module.exports = {
   siteMetadata: {
@@ -28,6 +28,10 @@ module.exports = {
           {
             title: `Blog`,
             slug: `/blog`,
+          },
+          {
+            title: `Musings`,
+            slug: `/musings`,
           },
           {
             title: `About`,
@@ -80,15 +84,13 @@ module.exports = {
         background_color: `#fff`,
         theme_color: `#6B46C1`,
         display: `standalone`,
-        icon: `static/icon.png`
+        icon: `static/icon.png`,
       },
     },
     {
       resolve: `gatsby-plugin-google-gtag`,
       options: {
-        trackingIds: [
-          'G-966GYR5CMJ',
-        ],
+        trackingIds: ['G-966GYR5CMJ'],
         gtagConfig: {
           anonymize_ip: true,
         },
@@ -97,6 +99,13 @@ module.exports = {
           respectDNT: true,
         },
       },
-    }
+    },
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `musings`,
+        path: `${__dirname}/content/musings`,
+      },
+    },
   ].filter(Boolean),
-}
+};
