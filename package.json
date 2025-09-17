@@ -17,21 +17,21 @@
     "deploy": "gatsby build --prefix-paths && gh-pages -d public"
   },
   "dependencies": {
-    "@lekoarts/gatsby-theme-minimal-blog": "6.x",
-    "gatsby": "5.x",
-    "gatsby-omni-font-loader": "2.x",
-    "gatsby-plugin-google-gtag": "5.x",
-    "gatsby-plugin-manifest": "5.x",
-    "gatsby-plugin-sitemap": "6.x",
-    "react": "18.x",
-    "react-dom": "18.x",
-    "theme-ui": "~0.15.3"
+    "@lekoarts/gatsby-theme-minimal-blog": "^6.2.6",
+    "gatsby": "^5.15.0",
+    "gatsby-omni-font-loader": "^2.0.2",
+    "gatsby-plugin-google-gtag": "^5.15.0",
+    "gatsby-plugin-manifest": "^5.15.0",
+    "gatsby-plugin-sitemap": "^6.15.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "theme-ui": "~0.15.7"
   },
   "optionalDependencies": {
-    "@parcel/watcher-linux-x64-glibc": "2.x"
+    "@parcel/watcher-linux-x64-glibc": "^2.5.1"
   },
   "devDependencies": {
-    "cross-env": "^7.0.0",
+    "cross-env": "^7.0.3",
     "gh-pages": "^5.0.0"
   }
 }
