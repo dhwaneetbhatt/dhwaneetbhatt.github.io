@@ -1,0 +1,39 @@
+---
+title: "Releasing Strapd 🛠️"
+date: 2025-12-23
+slug: "/blog/releasing-strapd"
+tags:
+  - open-source
+  - developer-tools
+canonicalUrl: "https://dhwaneetbhatt.com/blog/releasing-strapd"
+---
+
+Often, in the middle of day-to-day work, we come across small tasks that are neither easy to do by hand nor worth the effort of writing a Python script for. I refer to these as **"micro-tasks."**
+
+For example, in my job we use namespaced database names derived from UUIDs. We capitalize the UUID and replace hyphens with underscores to form the database name. Doing this manually is a waste of time, and writing and maintaining a script for such a small task is overkill. When everyone on the team needs to do this—developers, QA, and SREs—people often end up maintaining their own small hacks to get the job done.
+
+I believe a CLI is the best way to eliminate these micro-tasks. However, most existing CLI tools are built for specific purposes and come with their own learning curves. So I decided to build a single CLI tool that covers many of the common micro-tasks developers face in their day-to-day work.
+
+I also thought it would be helpful to have a web interface, so people who don’t rely on the CLI can use it as well. I didn’t want the CLI and web interface to have separate implementations of the same logic, so I decided to explore WebAssembly (WASM) to share the core logic between both interfaces. Rust felt like a natural choice—it’s well-suited for building CLIs and has excellent WASM support.
+
+I named the tool **strapd**, as it’s like a utility belt (think Batman) that’s "strapped" to you, always ready to help with your micro-tasks. I started working on this project in my free time in September 2025. Since I wanted to learn Rust, I deliberately avoided using code assistants while building the CLI and core logic. However, I’m not particularly strong at building web interfaces, so Google’s newly released Antigravity IDE (free tier) was good enough to vibe-code a functioning web app.
+
+The project is open source and available on [GitHub](https://github.com/dhwaneetbhatt/strapd). The [web app](https://dhwaneetbhatt.com/strapd) is also live and ready to use. If you’d like to try the [CLI](https://dhwaneetbhatt.com/strapd/#/cli), feel free to install it and give it a spin. Here are the initial supported tasks on both the CLI and web app. I will be adding more tasks over time based on feedback and my own needs.
+
+- **String Tools**: case, trim, slugify, reverse, replace, analysis
+- **Identifiers**: UUIDs (v4, v7), ULIDs
+- **Encoding**: Base64, URL, Hex
+- **Data Formatting**: JSON, YAML, XML, SQL (beautify, minify, sort)
+- **Format Conversion**: YAML ⇄ JSON
+- **Security**: Hash (MD5, SHA-1, SHA-256, SHA-512), HMAC (SHA-256, SHA-512)
+- **Random**: numbers, strings
+- **Date/Time**: timestamps
+- **Clipboard**: copy and paste (CLI only)
+
+```bash
+# Unix/Linux/macOS
+curl -fsSL https://raw.githubusercontent.com/dhwaneetbhatt/strapd/main/scripts/install.sh | bash
+
+# Windows
+Invoke-RestMethod -Uri "https://raw.githubusercontent.com/dhwaneetbhatt/strapd/main/scripts/install.ps1" | Invoke-Expression
+```
