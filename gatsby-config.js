@@ -13,7 +13,7 @@ module.exports = {
     // Will be used to generate absolute URLs for og:image etc.
     siteUrl: `https://dhwaneetbhatt.com`,
     // Used for SEO
-    siteDescription: `About Dhwaneet Bhatt`,
+    siteDescription: `Personal blog and portfolio of Dhwaneet Bhatt, featuring thoughts on software engineering, technology, and life.`,
     // Will be set on the <html /> tag
     siteLanguage: `en-in`,
     // Twitter Handle
@@ -43,10 +43,6 @@ module.exports = {
           },
         ],
         externalLinks: [
-          {
-            name: `Twitter`,
-            url: `https://twitter.com/dhwaneetbhatt`,
-          },
           {
             name: `LinkedIn`,
             url: `https://www.linkedin.com/in/dhwaneetbhatt`,

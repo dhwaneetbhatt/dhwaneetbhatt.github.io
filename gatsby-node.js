@@ -1,5 +1,7 @@
 const path = require('path');
 
+const musingTemplate = path.resolve('./src/templates/musing-template.js');
+
 exports.createPages = async ({ graphql, actions }) => {
   const { createPage } = actions;
   const result = await graphql(`
@@ -9,6 +11,9 @@ exports.createPages = async ({ graphql, actions }) => {
           id
           frontmatter {
             slug
+          }
+          internal {
+            contentFilePath
           }
         }
       }
@@ -24,7 +29,7 @@ exports.createPages = async ({ graphql, actions }) => {
   musings.forEach((musing) => {
     createPage({
       path: musing.frontmatter.slug,
-      component: path.resolve('./src/templates/musing-template.js'),
+      component: `${musingTemplate}?__contentFilePath=${musing.internal.contentFilePath}`,
       context: {
         slug: musing.frontmatter.slug,
       },

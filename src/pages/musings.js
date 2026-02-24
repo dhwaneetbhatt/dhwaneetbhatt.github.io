@@ -25,6 +25,8 @@ const Musings = ({ data }) => {
 
 export default Musings;
 
+export const Head = () => <title>💭 Musings | Dhwaneet Bhatt</title>;
+
 export const pageQuery = graphql`
   query MusingsQuery {
     allMdx(filter: { frontmatter: { slug: { regex: "/musings/" } } }, sort: { frontmatter: { date: DESC } }) {
