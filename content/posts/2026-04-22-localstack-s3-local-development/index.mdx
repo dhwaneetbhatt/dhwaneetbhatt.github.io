@@ -1,0 +1,209 @@
+---
+title: "LocalStack S3: Persistent local development"
+date: 2026-04-22
+slug: "/blog/localstack-s3-local-development"
+tags:
+  - docker
+  - aws
+canonicalUrl: "https://dhwaneetbhatt.com/blog/localstack-s3-local-development"
+---
+
+Building with AWS S3? You don't want to hit real AWS while developing. [LocalStack](https://localstack.cloud) gives you a full S3 instance running locally in Docker — the catch is that the community edition doesn't persist data across restarts. This post walks through a setup that does: Docker Compose + a simple backup script + an init hook to restore on startup. No paid plan needed.
+
+## Getting started
+
+You'll need:
+- Docker and Docker Compose
+- AWS CLI (`brew install awscli` on macOS)
+
+Add LocalStack to your `docker-compose.yaml`:
+
+```yaml
+services:
+  localstack:
+    image: localstack/localstack:4.4.0
+    container_name: localstack
+    restart: unless-stopped
+    environment:
+      - SERVICES=s3
+      - AWS_DEFAULT_REGION=us-east-1
+      - LOCALSTACK_HOST=localstack
+      - LOCALSTACK_SKIP_SSL_CERT_DOWNLOAD=1
+    ports:
+      - "4566:4566"
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./localstack/init/ready.d:/etc/localstack/init/ready.d
+      - ./localstack-backup/s3:/localstack-backup/s3
+
+volumes:
+  localstack_data:
+    driver: local
+```
+
+A few notes on this config:
+
+- **Pin the image version** — never use `latest`. If LocalStack ships a breaking change, `latest` will break your dev setup.
+- **`LOCALSTACK_SKIP_SSL_CERT_DOWNLOAD=1`** — LocalStack tries to fetch a certificate from its API on startup. If your container has no internet access (or the download fails), this gets noisy. The flag skips it and uses a self-signed cert instead.
+- **`SERVICES=s3`** — only start S3, not the whole suite. Faster startup.
+
+Bring it up:
+
+```bash
+docker compose up -d localstack
+```
+
+Create a bucket and test:
+
+```bash
+aws --endpoint-url=http://localhost:4566 s3 mb s3://my-bucket --region us-east-1
+aws --endpoint-url=http://localhost:4566 s3 ls
+```
+
+## The persistence problem
+
+Community LocalStack doesn't persist data across restarts. `PERSISTENCE=1` and snapshots are Pro-only. Restart the container and your buckets are gone.
+
+The fix: sync your S3 data to the host with a backup script, and restore it on startup with a LocalStack init hook.
+
+## The backup script
+
+Create `scripts/backup-s3.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+AWS="/opt/homebrew/bin/aws"   # adjust to your `which aws` path
+ENDPOINT="http://localhost:4566"
+BACKUP_DIR="$(cd "$(dirname "$0")/.." && pwd)/localstack-backup/s3"
+
+# Check if LocalStack is reachable
+if ! "$AWS" --endpoint-url="$ENDPOINT" s3 ls &>/dev/null; then
+    echo "$(date): LocalStack not reachable, skipping backup"
+    exit 0
+fi
+
+BUCKETS=$("$AWS" --endpoint-url="$ENDPOINT" s3 ls 2>/dev/null | awk '{print $3}')
+
+if [ -z "$BUCKETS" ]; then
+    echo "$(date): No buckets found, nothing to back up"
+    exit 0
+fi
+
+for BUCKET in $BUCKETS; do
+    mkdir -p "$BACKUP_DIR/$BUCKET"
+    "$AWS" --endpoint-url="$ENDPOINT" s3 sync "s3://$BUCKET" "$BACKUP_DIR/$BUCKET" --delete --quiet
+    echo "$(date): Backed up s3://$BUCKET -> $BACKUP_DIR/$BUCKET"
+done
+```
+
+Make it executable:
+
+```bash
+chmod +x scripts/backup-s3.sh
+```
+
+Run it manually to verify:
+
+```bash
+./scripts/backup-s3.sh
+```
+
+## Automate backups with cron
+
+Add a cron job to back up every 5 minutes:
+
+```bash
+(crontab -l 2>/dev/null; echo "*/5 * * * * /path/to/local-infra/scripts/backup-s3.sh >> /path/to/local-infra/localstack-backup/backup.log 2>&1") | crontab -
+```
+
+Use absolute paths — cron has a minimal environment and won't expand relative paths. Logs go to `localstack-backup/backup.log` so you can see what's happening.
+
+## The init hook
+
+LocalStack runs scripts in `/etc/localstack/init/ready.d/` after the service is ready. We'll use this to restore the backup on startup.
+
+Create `localstack/init/ready.d/restore-s3.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+BACKUP_DIR="/localstack-backup/s3"
+
+if [ ! -d "$BACKUP_DIR" ] || [ -z "$(ls -A "$BACKUP_DIR" 2>/dev/null)" ]; then
+    echo "No S3 backup found, skipping restore"
+    exit 0
+fi
+
+for BUCKET_DIR in "$BACKUP_DIR"/*/; do
+    [ -d "$BUCKET_DIR" ] || continue
+    BUCKET=$(basename "$BUCKET_DIR")
+    awslocal s3 mb "s3://$BUCKET" 2>/dev/null || true
+    awslocal s3 sync "$BUCKET_DIR" "s3://$BUCKET" --quiet
+    echo "Restored s3://$BUCKET"
+done
+
+echo "S3 restore complete"
+```
+
+```bash
+chmod +x localstack/init/ready.d/restore-s3.sh
+```
+
+The script uses `awslocal` (built into LocalStack) which points to `localhost:4566` automatically — no endpoint flag needed. The `|| true` on `s3 mb` keeps the script from failing if the bucket already exists.
+
+## Putting it together
+
+```
+local-infra/
+├── docker-compose.yaml
+├── scripts/
+│   └── backup-s3.sh          # runs via cron every 5 min on the host
+├── localstack/
+│   └── init/
+│       └── ready.d/
+│           └── restore-s3.sh # runs inside container on every startup
+└── localstack-backup/
+    ├── backup.log
+    └── s3/
+        └── my-bucket/        # backed-up objects live here
+            └── ...
+```
+
+The two volume mounts in `docker-compose.yaml` are what connect everything:
+
+```yaml
+- ./localstack/init/ready.d:/etc/localstack/init/ready.d   # init hook
+- ./localstack-backup/s3:/localstack-backup/s3             # shared backup dir
+```
+
+## How it works
+
+```bash
+# Start everything
+docker compose up -d localstack
+
+# → LocalStack starts → restore-s3.sh runs → your buckets and objects are back
+
+# Work with S3 normally
+aws --endpoint-url=http://localhost:4566 s3 cp file.txt s3://my-bucket/
+
+# Backup runs every 5 min automatically (or manually)
+./scripts/backup-s3.sh
+
+# Safe to restart — data comes back
+docker compose restart localstack
+```
+
+## Trade-offs
+
+- **Data loss window** — if LocalStack crashes mid-write before the next cron run, you lose up to 5 minutes of work. Fine for dev.
+- **Large files** — big S3 objects slow down sync. You can increase the cron interval or use `--exclude` for test fixtures.
+- **When to upgrade** — if you need real persistence, fine-grained IAM, or more AWS services, [LocalStack Pro](https://localstack.cloud/pricing/) is worth it.
+
+## That's it
+
+~50 lines of bash, two volume mounts, and you have persistent local S3. Not production-grade, but solid enough for development.
